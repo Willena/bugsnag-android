@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -33,7 +34,7 @@ public class NativeBridge implements Observer {
     private static final AtomicBoolean installed = new AtomicBoolean(false);
 
     public static native void install(String reportingDirectory, boolean autoNotify, int apiLevel,
-                                      boolean is32bit);
+                                      boolean is32bit, ByteBuffer anrSentinel);
 
     public static native void deliverReportAtPath(String filePath);
 
@@ -227,9 +228,13 @@ public class NativeBridge implements Observer {
                 warn("Received duplicate setup message with arg: " + arg);
                 return;
             }
-            String reportPath = reportDirectory + UUID.randomUUID().toString() + ".crash";
-            install(reportPath, true, Build.VERSION.SDK_INT, is32bit());
-            installed.set(true);
+            if (arg instanceof ByteBuffer) {
+                String reportPath = reportDirectory + UUID.randomUUID().toString() + ".crash";
+                install(reportPath, true, Build.VERSION.SDK_INT, is32bit(), (ByteBuffer)arg);
+                installed.set(true);
+            } else {
+                warn("Received install message with incorrect arg: " + arg);
+            }
         } finally {
             lock.unlock();
         }
