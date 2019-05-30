@@ -24,8 +24,10 @@ import android.text.TextUtils;
 import android.view.OrientationEventListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -284,7 +286,14 @@ public class Client extends Observable implements Observer {
 
     void sendNativeSetupNotification() {
         setChanged();
-        super.notifyObservers(new NativeBridge.Message(NativeBridge.MessageType.INSTALL, config));
+        List<Object> obj = Arrays.asList(
+            config,
+            NativeInterface.is32bit(),
+            NativeInterface.getLoggingEnabled(),
+            NativeInterface.getNativeReportPath()
+        );
+
+        super.notifyObservers(new NativeBridge.Message(NativeBridge.MessageType.INSTALL, obj));
         try {
             Async.run(new Runnable() {
                 @Override

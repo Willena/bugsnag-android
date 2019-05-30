@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -255,23 +256,27 @@ public class ObserverInterfaceTest {
     @Test
     public void testLeaveStringBreadcrumbSendsMessage() {
         client.leaveBreadcrumb("Drift 4 units left");
-        Breadcrumb crumb = (Breadcrumb)findMessageInQueue(
-                NativeBridge.MessageType.ADD_BREADCRUMB, Breadcrumb.class);
-        assertEquals(BreadcrumbType.MANUAL, crumb.getType());
-        assertEquals("manual", crumb.getName());
-        assertEquals(1, crumb.getMetadata().size());
-        assertEquals("Drift 4 units left", crumb.getMetadata().get("message"));
+        List<Object> crumb = (List)findMessageInQueue(
+                NativeBridge.MessageType.ADD_BREADCRUMB, List.class);
+        assertEquals("manual", crumb.get(0));
+        assertEquals(BreadcrumbType.MANUAL.toString(), crumb.get(1));
+
+        Map<String, Object> metaData = ((Map)crumb.get(3));
+        assertEquals(1, metaData.size());
+        assertEquals("Drift 4 units left", metaData.get("message"));
     }
 
     @Test
     public void testLeaveStringBreadcrumbDirectlySendsMessage() {
         client.breadcrumbs.add(new Breadcrumb("Drift 4 units left"));
-        Breadcrumb crumb = (Breadcrumb)findMessageInQueue(
-                NativeBridge.MessageType.ADD_BREADCRUMB, Breadcrumb.class);
-        assertEquals(BreadcrumbType.MANUAL, crumb.getType());
-        assertEquals("manual", crumb.getName());
-        assertEquals(1, crumb.getMetadata().size());
-        assertEquals("Drift 4 units left", crumb.getMetadata().get("message"));
+        List<Object> crumb = (List)findMessageInQueue(
+                NativeBridge.MessageType.ADD_BREADCRUMB, List.class);
+        assertEquals("manual", crumb.get(0));
+        assertEquals(BreadcrumbType.MANUAL.toString(), crumb.get(1));
+
+        Map<String, Object> metaData = ((Map)crumb.get(3));
+        assertEquals(1, metaData.size());
+        assertEquals("Drift 4 units left", metaData.get("message"));
     }
 
     @Test
@@ -289,11 +294,12 @@ public class ObserverInterfaceTest {
     @Test
     public void testLeaveBreadcrumbSendsMessage() {
         client.leaveBreadcrumb("Rollback", BreadcrumbType.LOG, new HashMap<String, String>());
-        Breadcrumb crumb = (Breadcrumb)findMessageInQueue(
-                NativeBridge.MessageType.ADD_BREADCRUMB, Breadcrumb.class);
-        assertEquals(BreadcrumbType.LOG, crumb.getType());
-        assertEquals("Rollback", crumb.getName());
-        assertEquals(0, crumb.getMetadata().size());
+        List<Object> crumb = (List)findMessageInQueue(
+                NativeBridge.MessageType.ADD_BREADCRUMB, List.class);
+
+        assertEquals("Rollback", crumb.get(0));
+        assertEquals(BreadcrumbType.LOG.toString(), crumb.get(1));
+        assertEquals(0, ((Map)crumb.get(3)).size());
     }
 
     private Object findMessageInQueue(NativeBridge.MessageType type, Class<?> argClass) {

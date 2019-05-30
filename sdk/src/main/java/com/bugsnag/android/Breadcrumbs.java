@@ -5,6 +5,8 @@ import com.bugsnag.android.ndk.NativeBridge;
 import android.support.annotation.NonNull;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Observable;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -53,8 +55,16 @@ class Breadcrumbs extends Observable implements JsonStream.Streamable {
             store.add(breadcrumb);
             pruneBreadcrumbs();
             setChanged();
+
+            List<Object> breadcrumbValues = Arrays.asList(
+                breadcrumb.getName(),
+                breadcrumb.getType().toString(),
+                breadcrumb.getTimestamp(),
+                breadcrumb.getMetadata()
+            );
+
             notifyObservers(new NativeBridge.Message(
-                NativeBridge.MessageType.ADD_BREADCRUMB, breadcrumb));
+                NativeBridge.MessageType.ADD_BREADCRUMB, breadcrumbValues));
         } catch (IOException ex) {
             Logger.warn("Dropping breadcrumb because it could not be serialized", ex);
         }

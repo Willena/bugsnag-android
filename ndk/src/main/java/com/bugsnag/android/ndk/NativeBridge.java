@@ -1,8 +1,5 @@
 package com.bugsnag.android.ndk;
 
-import com.bugsnag.android.Breadcrumb;
-import com.bugsnag.android.NativeInterface;
-
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -206,22 +203,8 @@ public class NativeBridge implements Observer {
 
     public static native void updateUserName(String newValue);
 
-    private boolean loggingEnabled = true;
-    private final String reportDirectory;
-
-    /**
-     * Creates a new native bridge for interacting with native components.
-     * Configures logging and ensures that the reporting directory exists
-     * immediately.
-     */
-    public NativeBridge() {
-        loggingEnabled = NativeInterface.getLoggingEnabled();
-        reportDirectory = NativeInterface.getNativeReportPath();
-        File outFile = new File(reportDirectory);
-        if (!outFile.exists() && !outFile.mkdirs()) {
-            warn("The native reporting directory cannot be created.");
-        }
-    }
+    private volatile boolean loggingEnabled = true;
+    private volatile String reportDirectory;
 
     @Override
     public void update(Observable observable, Object rawMessage) {
@@ -343,6 +326,11 @@ public class NativeBridge implements Observer {
         }
     }
 
+    /**
+     * Creates a new native bridge for interacting with native components.
+     * Configures logging and ensures that the reporting directory exists
+     * immediately.
+     */
     private void handleInstallMessage(Object arg) {
         lock.lock();
         try {
@@ -350,35 +338,53 @@ public class NativeBridge implements Observer {
                 warn("Received duplicate setup message with arg: " + arg);
                 return;
             }
-            String reportPath = reportDirectory + UUID.randomUUID().toString() + ".crash";
-            install(reportPath, true, Build.VERSION.SDK_INT, is32bit());
-            installed.set(true);
+
+            boolean is32bit;
+
+            if (arg instanceof List) {
+                @SuppressWarnings("unchecked")
+                List<Object> values = (List<Object>) arg;
+                if (values.size() == 4
+                    && values.get(1) instanceof Boolean
+                    && values.get(2) instanceof Boolean
+                    && values.get(3) instanceof String) {
+
+                    is32bit = loggingEnabled = (boolean) values.get(1);
+                    loggingEnabled = (boolean) values.get(2);
+                    reportDirectory = (String) values.get(3);
+
+                    File outFile = new File(reportDirectory);
+                    if (!outFile.exists() && !outFile.mkdirs()) {
+                        warn("The native reporting directory cannot be created.");
+                    }
+
+                    String reportPath = reportDirectory + UUID.randomUUID().toString() + ".crash";
+                    install(reportPath, true, Build.VERSION.SDK_INT, is32bit);
+                    installed.set(true);
+                } else {
+                    warn("Received malformed NDK install message.");
+                }
+            } else {
+                warn("Received malformed NDK install message.");
+            }
+
         } finally {
             lock.unlock();
         }
     }
 
-    private boolean is32bit() {
-        String[] abis = NativeInterface.getCpuAbi();
+    private void handleAddBreadcrumb(Object arg) {
+        if (arg instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<Object> values = (List<Object>) arg;
 
-        boolean is32bit = true;
-        for (String abi : abis) {
-            if (abi.contains("64")) {
-                is32bit = false;
-                break;
+            if (values.size() == 4) {
+                addBreadcrumb((String) values.get(0), (String) values.get(1),
+                    (String) values.get(2), values.get(3));
+                return;
             }
         }
-        return is32bit;
-    }
-
-    private void handleAddBreadcrumb(Object arg) {
-        if (arg instanceof Breadcrumb) {
-            Breadcrumb crumb = (Breadcrumb) arg;
-            addBreadcrumb(crumb.getName(), crumb.getType().toString(),
-                crumb.getTimestamp(), crumb.getMetadata());
-        } else {
-            warn("Attempted to add non-breadcrumb: " + arg);
-        }
+        warn("Attempted to add non-breadcrumb: " + arg);
     }
 
     private void handleAddMetadata(Object arg) {

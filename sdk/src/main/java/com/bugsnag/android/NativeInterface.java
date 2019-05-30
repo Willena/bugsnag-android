@@ -339,4 +339,17 @@ public class NativeInterface {
             }
         });
     }
+
+    static boolean is32bit() {
+        String[] abis = NativeInterface.getCpuAbi();
+
+        boolean is32bit = true;
+        for (String abi : abis) {
+            if (abi.contains("64")) {
+                is32bit = false;
+                break;
+            }
+        }
+        return is32bit;
+    }
 }
