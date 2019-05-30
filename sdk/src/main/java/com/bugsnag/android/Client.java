@@ -3,7 +3,7 @@ package com.bugsnag.android;
 import static com.bugsnag.android.ConfigFactory.MF_BUILD_UUID;
 import static com.bugsnag.android.MapUtils.getStringFromMap;
 
-import com.bugsnag.android.NativeInterface.Message;
+import com.bugsnag.android.ndk.NativeBridge;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -228,8 +228,8 @@ public class Client extends Observable implements Observer {
             @Override
             public void onOrientationChanged(int orientation) {
                 client.setChanged();
-                client.notifyObservers(new Message(
-                    NativeInterface.MessageType.UPDATE_ORIENTATION, orientation));
+                client.notifyObservers(new NativeBridge.Message(
+                    NativeBridge.MessageType.UPDATE_ORIENTATION, orientation));
             }
         };
         try {
@@ -284,7 +284,7 @@ public class Client extends Observable implements Observer {
 
     void sendNativeSetupNotification() {
         setChanged();
-        super.notifyObservers(new Message(NativeInterface.MessageType.INSTALL, config));
+        super.notifyObservers(new NativeBridge.Message(NativeBridge.MessageType.INSTALL, config));
         try {
             Async.run(new Runnable() {
                 @Override
@@ -299,13 +299,13 @@ public class Client extends Observable implements Observer {
 
     void enqueuePendingNativeReports() {
         setChanged();
-        notifyObservers(new Message(
-            NativeInterface.MessageType.DELIVER_PENDING, null));
+        notifyObservers(new NativeBridge.Message(
+            NativeBridge.MessageType.DELIVER_PENDING, null));
     }
 
     @Override
     public void update(@NonNull Observable observable, @NonNull Object arg) {
-        if (arg instanceof Message) {
+        if (arg instanceof NativeBridge.Message) {
             setChanged();
             super.notifyObservers(arg);
         }
@@ -951,11 +951,11 @@ public class Client extends Observable implements Observer {
             setChanged();
 
             if (error.getHandledState().isUnhandled()) {
-                notifyObservers(new Message(
-                    NativeInterface.MessageType.NOTIFY_UNHANDLED, null));
+                notifyObservers(new NativeBridge.Message(
+                    NativeBridge.MessageType.NOTIFY_UNHANDLED, null));
             } else {
-                notifyObservers(new Message(
-                    NativeInterface.MessageType.NOTIFY_HANDLED, error.getExceptionName()));
+                notifyObservers(new NativeBridge.Message(
+                    NativeBridge.MessageType.NOTIFY_HANDLED, error.getExceptionName()));
             }
         }
 

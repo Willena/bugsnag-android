@@ -1,5 +1,7 @@
 package com.bugsnag.android;
 
+import com.bugsnag.android.ndk.NativeBridge;
+
 import android.content.Context;
 import android.os.Debug;
 import android.support.annotation.NonNull;
@@ -80,7 +82,7 @@ public class Configuration extends Observable implements Observer {
      * Respond to an update notification from observed objects, like MetaData
      */
     public void update(@NonNull Observable observable, @NonNull Object arg) {
-        if (arg instanceof NativeInterface.Message) {
+        if (arg instanceof NativeBridge.Message) {
             setChanged();
             notifyObservers(arg);
         }
@@ -115,8 +117,8 @@ public class Configuration extends Observable implements Observer {
     public void setAppVersion(@NonNull String appVersion) {
         this.appVersion = appVersion;
         setChanged();
-        notifyObservers(new NativeInterface.Message(
-                    NativeInterface.MessageType.UPDATE_APP_VERSION, appVersion));
+        notifyObservers(new NativeBridge.Message(
+            NativeBridge.MessageType.UPDATE_APP_VERSION, appVersion));
     }
 
     /**
@@ -139,8 +141,8 @@ public class Configuration extends Observable implements Observer {
     public void setContext(@Nullable String context) {
         this.context = context;
         setChanged();
-        notifyObservers(new NativeInterface.Message(
-                    NativeInterface.MessageType.UPDATE_CONTEXT, context));
+        notifyObservers(new NativeBridge.Message(
+            NativeBridge.MessageType.UPDATE_CONTEXT, context));
     }
 
     /**
@@ -249,8 +251,8 @@ public class Configuration extends Observable implements Observer {
     public void setBuildUUID(@Nullable String buildUuid) {
         this.buildUuid = buildUuid;
         setChanged();
-        notifyObservers(new NativeInterface.Message(
-                    NativeInterface.MessageType.UPDATE_BUILD_UUID, buildUuid));
+        notifyObservers(new NativeBridge.Message(
+                    NativeBridge.MessageType.UPDATE_BUILD_UUID, buildUuid));
     }
 
     /**
@@ -375,8 +377,8 @@ public class Configuration extends Observable implements Observer {
     public void setReleaseStage(@Nullable String releaseStage) {
         this.releaseStage = releaseStage;
         setChanged();
-        notifyObservers(new NativeInterface.Message(
-                    NativeInterface.MessageType.UPDATE_RELEASE_STAGE, releaseStage));
+        notifyObservers(new NativeBridge.Message(
+                    NativeBridge.MessageType.UPDATE_RELEASE_STAGE, releaseStage));
     }
 
     /**
@@ -472,8 +474,8 @@ public class Configuration extends Observable implements Observer {
             this.metaData = metaData;
         }
         this.setChanged();
-        this.notifyObservers(new NativeInterface.Message(
-                    NativeInterface.MessageType.UPDATE_METADATA, metaData));
+        this.notifyObservers(new NativeBridge.Message(
+                    NativeBridge.MessageType.UPDATE_METADATA, metaData));
         this.metaData.addObserver(this);
     }
 

@@ -5,6 +5,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.bugsnag.android.ndk.NativeBridge;
+
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.support.test.runner.AndroidJUnit4;
@@ -50,7 +52,7 @@ public class ObserverInterfaceTest {
         metadata.addToTab("foo", "bar", "baz");
         client.setMetaData(metadata);
         Object value = findMessageInQueue(
-                NativeInterface.MessageType.UPDATE_METADATA, MetaData.class);
+                NativeBridge.MessageType.UPDATE_METADATA, MetaData.class);
         assertEquals(metadata, value);
     }
 
@@ -60,7 +62,7 @@ public class ObserverInterfaceTest {
         metadata.addToTab("foo", "bar", "baz");
         client.getConfig().setMetaData(metadata);
         Object value = findMessageInQueue(
-                NativeInterface.MessageType.UPDATE_METADATA, MetaData.class);
+                NativeBridge.MessageType.UPDATE_METADATA, MetaData.class);
         assertEquals(metadata, value);
     }
 
@@ -68,7 +70,7 @@ public class ObserverInterfaceTest {
     public void testAddMetadataToClientSendsMessage() {
         client.addToTab("foo", "bar", "baz");
         List<Object> metadataItem = (List<Object>)findMessageInQueue(
-                NativeInterface.MessageType.ADD_METADATA, List.class);
+                NativeBridge.MessageType.ADD_METADATA, List.class);
         assertEquals(3, metadataItem.size());
         assertEquals("foo", metadataItem.get(0));
         assertEquals("bar", metadataItem.get(1));
@@ -79,7 +81,7 @@ public class ObserverInterfaceTest {
     public void testAddNullMetadataToClientSendsMessage() {
         client.addToTab("foo", "bar", null);
         List<Object> metadataItem = (List<Object>)findMessageInQueue(
-                NativeInterface.MessageType.REMOVE_METADATA, List.class);
+                NativeBridge.MessageType.REMOVE_METADATA, List.class);
         assertEquals(2, metadataItem.size());
         assertEquals("foo", metadataItem.get(0));
         assertEquals("bar", metadataItem.get(1));
@@ -89,7 +91,7 @@ public class ObserverInterfaceTest {
     public void testAddMetadataToMetaDataSendsMessage() {
         client.getMetaData().addToTab("foo", "bar", "baz");
         List<Object> metadataItem = (List<Object>)findMessageInQueue(
-                NativeInterface.MessageType.ADD_METADATA, List.class);
+                NativeBridge.MessageType.ADD_METADATA, List.class);
         assertEquals(3, metadataItem.size());
         assertEquals("foo", metadataItem.get(0));
         assertEquals("bar", metadataItem.get(1));
@@ -100,7 +102,7 @@ public class ObserverInterfaceTest {
     public void testClearTabFromClientSendsMessage() {
         client.clearTab("axis");
         Object value = findMessageInQueue(
-                NativeInterface.MessageType.CLEAR_METADATA_TAB, String.class);
+                NativeBridge.MessageType.CLEAR_METADATA_TAB, String.class);
         assertEquals("axis", value);
     }
 
@@ -108,7 +110,7 @@ public class ObserverInterfaceTest {
     public void testClearTabFromMetaDataSendsMessage() {
         client.getMetaData().clearTab("axis");
         Object value =  findMessageInQueue(
-                NativeInterface.MessageType.CLEAR_METADATA_TAB, String.class);
+                NativeBridge.MessageType.CLEAR_METADATA_TAB, String.class);
         assertEquals("axis", value);
     }
 
@@ -116,7 +118,7 @@ public class ObserverInterfaceTest {
     public void testAddNullMetadataToMetaDataSendsMessage() {
         client.getMetaData().addToTab("foo", "bar", null);
         List<Object> metadataItem = (List<Object>)findMessageInQueue(
-                NativeInterface.MessageType.REMOVE_METADATA, List.class);
+                NativeBridge.MessageType.REMOVE_METADATA, List.class);
         assertEquals(2, metadataItem.size());
         assertEquals("foo", metadataItem.get(0));
         assertEquals("bar", metadataItem.get(1));
@@ -126,7 +128,7 @@ public class ObserverInterfaceTest {
     public void testClientSetReleaseStageSendsMessage() {
         client.setReleaseStage("prod-2");
         Object value = findMessageInQueue(
-                NativeInterface.MessageType.UPDATE_RELEASE_STAGE, String.class);
+                NativeBridge.MessageType.UPDATE_RELEASE_STAGE, String.class);
         assertEquals("prod-2", value);
     }
 
@@ -134,7 +136,7 @@ public class ObserverInterfaceTest {
     public void testConfigSetReleaseStageSendsMessage() {
         client.getConfig().setReleaseStage("prod-2");
         Object value = findMessageInQueue(
-                NativeInterface.MessageType.UPDATE_RELEASE_STAGE, String.class);
+                NativeBridge.MessageType.UPDATE_RELEASE_STAGE, String.class);
         assertEquals("prod-2", value);
     }
 
@@ -144,7 +146,7 @@ public class ObserverInterfaceTest {
         client.startSession();
         client.notify(new Exception("ruh roh"));
         Object errorClass = findMessageInQueue(
-                NativeInterface.MessageType.NOTIFY_HANDLED, String.class);
+                NativeBridge.MessageType.NOTIFY_HANDLED, String.class);
         assertEquals("java.lang.Exception", errorClass);
     }
 
@@ -152,7 +154,7 @@ public class ObserverInterfaceTest {
     public void testStartSessionSendsMessage() throws InterruptedException {
         client.startSession();
         List<Object> sessionInfo = (List<Object>)findMessageInQueue(
-                NativeInterface.MessageType.START_SESSION, List.class);
+                NativeBridge.MessageType.START_SESSION, List.class);
         assertEquals(4, sessionInfo.size());
         assertTrue(sessionInfo.get(0) instanceof String);
         assertTrue(sessionInfo.get(1) instanceof String);
@@ -164,7 +166,7 @@ public class ObserverInterfaceTest {
     public void testStopSessionSendsmessage() {
         client.startSession();
         client.stopSession();
-        Object msg = findMessageInQueue(NativeInterface.MessageType.STOP_SESSION, null);
+        Object msg = findMessageInQueue(NativeBridge.MessageType.STOP_SESSION, null);
         assertNull(msg);
     }
 
@@ -172,7 +174,7 @@ public class ObserverInterfaceTest {
     public void testClientSetBuildUUIDSendsMessage() {
         client.setBuildUUID("234423-a");
         Object value = findMessageInQueue(
-                NativeInterface.MessageType.UPDATE_BUILD_UUID, String.class);
+                NativeBridge.MessageType.UPDATE_BUILD_UUID, String.class);
         assertEquals("234423-a", value);
     }
 
@@ -180,7 +182,7 @@ public class ObserverInterfaceTest {
     public void testConfigSetBuildUUIDSendsMessage() {
         client.getConfig().setBuildUUID("234423-a");
         Object value = findMessageInQueue(
-                NativeInterface.MessageType.UPDATE_BUILD_UUID, String.class);
+                NativeBridge.MessageType.UPDATE_BUILD_UUID, String.class);
         assertEquals("234423-a", value);
     }
 
@@ -188,7 +190,7 @@ public class ObserverInterfaceTest {
     public void testClientSetAppVersionSendsMessage() {
         client.setAppVersion("300.0.1x");
         Object value = findMessageInQueue(
-                NativeInterface.MessageType.UPDATE_APP_VERSION, String.class);
+                NativeBridge.MessageType.UPDATE_APP_VERSION, String.class);
         assertEquals("300.0.1x", value);
     }
 
@@ -196,7 +198,7 @@ public class ObserverInterfaceTest {
     public void testConfigSetAppVersionSendsMessage() {
         client.getConfig().setAppVersion("300.0.1x");
         Object value = findMessageInQueue(
-                NativeInterface.MessageType.UPDATE_APP_VERSION, String.class);
+                NativeBridge.MessageType.UPDATE_APP_VERSION, String.class);
         assertEquals("300.0.1x", value);
     }
 
@@ -204,7 +206,7 @@ public class ObserverInterfaceTest {
     public void testClientSetContextSendsMessage() {
         client.setContext("Pod Bay");
         String context = (String)findMessageInQueue(
-                NativeInterface.MessageType.UPDATE_CONTEXT, String.class);
+                NativeBridge.MessageType.UPDATE_CONTEXT, String.class);
         assertEquals("Pod Bay", context);
     }
 
@@ -212,7 +214,7 @@ public class ObserverInterfaceTest {
     public void testConfigSetContextSendsMessage() {
         client.getConfig().setContext("Pod Bay");
         String context = (String)findMessageInQueue(
-                NativeInterface.MessageType.UPDATE_CONTEXT, String.class);
+                NativeBridge.MessageType.UPDATE_CONTEXT, String.class);
         assertEquals("Pod Bay", context);
     }
 
@@ -220,7 +222,7 @@ public class ObserverInterfaceTest {
     public void testClientSetUserId() {
         client.setUserId("personX");
         String value = (String)findMessageInQueue(
-                NativeInterface.MessageType.UPDATE_USER_ID, String.class);
+                NativeBridge.MessageType.UPDATE_USER_ID, String.class);
         assertEquals("personX", value);
     }
 
@@ -228,7 +230,7 @@ public class ObserverInterfaceTest {
     public void testClientSetUserEmail() {
         client.setUserEmail("bip@example.com");
         String value = (String)findMessageInQueue(
-                NativeInterface.MessageType.UPDATE_USER_EMAIL, String.class);
+                NativeBridge.MessageType.UPDATE_USER_EMAIL, String.class);
         assertEquals("bip@example.com", value);
     }
 
@@ -236,25 +238,25 @@ public class ObserverInterfaceTest {
     public void testClientSetUserName() {
         client.setUserName("Loblaw");
         String value = (String)findMessageInQueue(
-                NativeInterface.MessageType.UPDATE_USER_NAME, String.class);
+                NativeBridge.MessageType.UPDATE_USER_NAME, String.class);
         assertEquals("Loblaw", value);
     }
 
     @Test
     public void testClientClearUserSendsMessage() {
         client.clearUser(); // resets to device ID
-        String value = (String)findMessageInQueue(NativeInterface.MessageType.UPDATE_USER_ID,
+        String value = (String)findMessageInQueue(NativeBridge.MessageType.UPDATE_USER_ID,
                                                   String.class);
         assertEquals(client.getDeviceData().getDeviceData().get("id"), value);
-        findMessageInQueue(NativeInterface.MessageType.UPDATE_USER_EMAIL, null);
-        findMessageInQueue(NativeInterface.MessageType.UPDATE_USER_NAME, null);
+        findMessageInQueue(NativeBridge.MessageType.UPDATE_USER_EMAIL, null);
+        findMessageInQueue(NativeBridge.MessageType.UPDATE_USER_NAME, null);
     }
 
     @Test
     public void testLeaveStringBreadcrumbSendsMessage() {
         client.leaveBreadcrumb("Drift 4 units left");
         Breadcrumb crumb = (Breadcrumb)findMessageInQueue(
-                NativeInterface.MessageType.ADD_BREADCRUMB, Breadcrumb.class);
+                NativeBridge.MessageType.ADD_BREADCRUMB, Breadcrumb.class);
         assertEquals(BreadcrumbType.MANUAL, crumb.getType());
         assertEquals("manual", crumb.getName());
         assertEquals(1, crumb.getMetadata().size());
@@ -265,7 +267,7 @@ public class ObserverInterfaceTest {
     public void testLeaveStringBreadcrumbDirectlySendsMessage() {
         client.breadcrumbs.add(new Breadcrumb("Drift 4 units left"));
         Breadcrumb crumb = (Breadcrumb)findMessageInQueue(
-                NativeInterface.MessageType.ADD_BREADCRUMB, Breadcrumb.class);
+                NativeBridge.MessageType.ADD_BREADCRUMB, Breadcrumb.class);
         assertEquals(BreadcrumbType.MANUAL, crumb.getType());
         assertEquals("manual", crumb.getName());
         assertEquals(1, crumb.getMetadata().size());
@@ -275,34 +277,34 @@ public class ObserverInterfaceTest {
     @Test
     public void testClearBreadcrumbsSendsMessage() {
         client.clearBreadcrumbs();
-        findMessageInQueue(NativeInterface.MessageType.CLEAR_BREADCRUMBS, null);
+        findMessageInQueue(NativeBridge.MessageType.CLEAR_BREADCRUMBS, null);
     }
 
     @Test
     public void testClearBreadcrumbsDirectlySendsMessage() {
         client.breadcrumbs.clear();
-        findMessageInQueue(NativeInterface.MessageType.CLEAR_BREADCRUMBS, null);
+        findMessageInQueue(NativeBridge.MessageType.CLEAR_BREADCRUMBS, null);
     }
 
     @Test
     public void testLeaveBreadcrumbSendsMessage() {
         client.leaveBreadcrumb("Rollback", BreadcrumbType.LOG, new HashMap<String, String>());
         Breadcrumb crumb = (Breadcrumb)findMessageInQueue(
-                NativeInterface.MessageType.ADD_BREADCRUMB, Breadcrumb.class);
+                NativeBridge.MessageType.ADD_BREADCRUMB, Breadcrumb.class);
         assertEquals(BreadcrumbType.LOG, crumb.getType());
         assertEquals("Rollback", crumb.getName());
         assertEquals(0, crumb.getMetadata().size());
     }
 
-    private Object findMessageInQueue(NativeInterface.MessageType type, Class<?> argClass) {
+    private Object findMessageInQueue(NativeBridge.MessageType type, Class<?> argClass) {
         for (Object item : observer.observed) {
-            if (item instanceof  NativeInterface.Message) {
-                NativeInterface.Message message = (NativeInterface.Message)item;
+            if (item instanceof  NativeBridge.Message) {
+                NativeBridge.Message message = (NativeBridge.Message)item;
                 if (message.type != type) {
                     continue;
                 }
                 if (argClass == null) {
-                    if (((NativeInterface.Message)item).value == null) {
+                    if (((NativeBridge.Message)item).value == null) {
                         return null;
                     }
                 } else if (argClass.isInstance(message.value)) {

@@ -1,5 +1,7 @@
 package com.bugsnag.android;
 
+import com.bugsnag.android.ndk.NativeBridge;
+
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -62,13 +64,13 @@ public class MetaData extends Observable implements JsonStream.Streamable {
         setChanged();
         if (value != null) {
             tab.put(key, value);
-            notifyObservers(new NativeInterface.Message(
-                        NativeInterface.MessageType.ADD_METADATA,
+            notifyObservers(new NativeBridge.Message(
+                        NativeBridge.MessageType.ADD_METADATA,
                         Arrays.asList(tabName, key, value)));
         } else {
             tab.remove(key);
-            notifyObservers(new NativeInterface.Message(
-                        NativeInterface.MessageType.REMOVE_METADATA,
+            notifyObservers(new NativeBridge.Message(
+                        NativeBridge.MessageType.REMOVE_METADATA,
                         Arrays.asList(tabName, key)));
         }
     }
@@ -81,8 +83,8 @@ public class MetaData extends Observable implements JsonStream.Streamable {
     public void clearTab(@NonNull String tabName) {
         store.remove(tabName);
         setChanged();
-        notifyObservers(new NativeInterface.Message(
-                    NativeInterface.MessageType.CLEAR_METADATA_TAB, tabName));
+        notifyObservers(new NativeBridge.Message(
+                    NativeBridge.MessageType.CLEAR_METADATA_TAB, tabName));
     }
 
     @NonNull

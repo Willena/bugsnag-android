@@ -5,6 +5,7 @@ import com.bugsnag.android.MetaData;
 import com.bugsnag.android.NativeInterface;
 
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -31,6 +32,129 @@ public class NativeBridge implements Observer {
     private static final String LOG_TAG = "BugsnagNDK:NativeBridge";
     private static final Lock lock = new ReentrantLock();
     private static final AtomicBoolean installed = new AtomicBoolean(false);
+
+    public enum MessageType {
+        /**
+         * Add a breadcrumb. The Message object should be the breadcrumb
+         */
+        ADD_BREADCRUMB,
+        /**
+         * Add a new metadata value. The Message object should be an array
+         * containing [tab, key, value]
+         */
+        ADD_METADATA,
+        /**
+         * Clear all breadcrumbs
+         */
+        CLEAR_BREADCRUMBS,
+        /**
+         * Clear all metadata on a tab. The Message object should be the tab
+         * name
+         */
+        CLEAR_METADATA_TAB,
+        /**
+         * Deliver all pending reports
+         */
+        DELIVER_PENDING,
+        /**
+         * Set up Bugsnag. The message object should be a Configuration.
+         */
+        INSTALL,
+        /**
+         * Send a report for a handled Java exception
+         */
+        NOTIFY_HANDLED,
+        /**
+         * Send a report for an unhandled error in the Java layer
+         */
+        NOTIFY_UNHANDLED,
+        /**
+         * Remove a metadata value. The Message object should be a string array
+         * containing [tab, key]
+         */
+        REMOVE_METADATA,
+        /**
+         * A new session was started. The Message object should be a string
+         * array
+         * containing [id, startDateIsoString]
+         */
+        START_SESSION,
+
+        /**
+         * A session was stopped.
+         */
+        STOP_SESSION,
+
+        /**
+         * Set a new app version. The Message object should be the new app
+         * version
+         */
+        UPDATE_APP_VERSION,
+        /**
+         * Set a new build UUID. The Message object should be the new build
+         * UUID string
+         */
+        UPDATE_BUILD_UUID,
+        /**
+         * Set a new context. The message object should be the new context
+         */
+        UPDATE_CONTEXT,
+        /**
+         * Set a new value for `app.inForeground`. The message object should be a
+         * List containing the values [inForeground (Boolean),
+         * foregroundActivityName (String)]
+         */
+        UPDATE_IN_FOREGROUND,
+        /**
+         * Set a new value for `app.lowMemory`. The message object should be a
+         * Boolean
+         */
+        UPDATE_LOW_MEMORY,
+        /**
+         * Set a new value for all custom metadata. The message object should be
+         * MetaData.
+         */
+        UPDATE_METADATA,
+        /**
+         * Set a new value for `device.orientation`. The message object should
+         * be the orientation in degrees
+         */
+        UPDATE_ORIENTATION,
+        /**
+         * Set a new value for `app.releaseStage`. The message object should be
+         * the new release stage
+         */
+        UPDATE_RELEASE_STAGE,
+        /**
+         * Set a new value for user email. The message object is a string
+         */
+        UPDATE_USER_EMAIL,
+        /**
+         * Set a new value for user name. The message object is a string
+         */
+        UPDATE_USER_NAME,
+        /**
+         * Set a new value for user id. The message object is a string
+         */
+        UPDATE_USER_ID,
+    }
+
+    /**
+     * Wrapper for messages sent to native observers
+     */
+    public static class Message {
+
+        @NonNull
+        public final MessageType type;
+
+        @Nullable
+        public final Object value;
+
+        public Message(@NonNull MessageType type, @Nullable Object value) {
+            this.type = type;
+            this.value = value;
+        }
+    }
 
     public static native void install(String reportingDirectory, boolean autoNotify, int apiLevel,
                                       boolean is32bit);
@@ -102,7 +226,7 @@ public class NativeBridge implements Observer {
 
     @Override
     public void update(Observable observable, Object rawMessage) {
-        NativeInterface.Message message = parseMessage(rawMessage);
+        Message message = parseMessage(rawMessage);
         if (message == null) {
             return;
         }
@@ -180,10 +304,10 @@ public class NativeBridge implements Observer {
     }
 
     @Nullable
-    private NativeInterface.Message parseMessage(Object rawMessage) {
-        if (rawMessage instanceof NativeInterface.Message) {
-            NativeInterface.Message message = (NativeInterface.Message)rawMessage;
-            if (message.type != NativeInterface.MessageType.INSTALL && !installed.get()) {
+    private Message parseMessage(Object rawMessage) {
+        if (rawMessage instanceof Message) {
+            Message message = (Message)rawMessage;
+            if (message.type != MessageType.INSTALL && !installed.get()) {
                 warn("Received message before INSTALL: " + message.type);
                 return null;
             }

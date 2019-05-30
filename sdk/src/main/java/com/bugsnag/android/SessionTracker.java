@@ -2,6 +2,8 @@ package com.bugsnag.android;
 
 import static com.bugsnag.android.MapUtils.getStringFromMap;
 
+import com.bugsnag.android.ndk.NativeBridge;
+
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
@@ -94,8 +96,8 @@ class SessionTracker extends Observable implements Application.ActivityLifecycle
         if (session != null) {
             session.isStopped.set(true);
             setChanged();
-            notifyObservers(new NativeInterface.Message(
-                NativeInterface.MessageType.STOP_SESSION, null));
+            notifyObservers(new NativeBridge.Message(
+                NativeBridge.MessageType.STOP_SESSION, null));
         }
     }
 
@@ -119,8 +121,8 @@ class SessionTracker extends Observable implements Application.ActivityLifecycle
     private void notifySessionStartObserver(Session session) {
         setChanged();
         String startedAt = DateUtils.toIso8601(session.getStartedAt());
-        notifyObservers(new NativeInterface.Message(
-            NativeInterface.MessageType.START_SESSION,
+        notifyObservers(new NativeBridge.Message(
+            NativeBridge.MessageType.START_SESSION,
             Arrays.asList(session.getId(), startedAt,
                 session.getHandledCount(), session.getUnhandledCount())));
     }
@@ -145,8 +147,8 @@ class SessionTracker extends Observable implements Application.ActivityLifecycle
             notifySessionStartObserver(session);
         } else {
             setChanged();
-            notifyObservers(new NativeInterface.Message(
-                NativeInterface.MessageType.STOP_SESSION, null));
+            notifyObservers(new NativeBridge.Message(
+                NativeBridge.MessageType.STOP_SESSION, null));
         }
         currentSession.set(session);
         return session;
@@ -401,8 +403,8 @@ class SessionTracker extends Observable implements Application.ActivityLifecycle
     }
 
     private void notifyNdkInForeground() {
-        notifyObservers(new NativeInterface.Message(
-            NativeInterface.MessageType.UPDATE_IN_FOREGROUND,
+        notifyObservers(new NativeBridge.Message(
+            NativeBridge.MessageType.UPDATE_IN_FOREGROUND,
             Arrays.asList(isInForeground(), getContextActivity())));
     }
 
