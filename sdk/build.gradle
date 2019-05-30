@@ -54,6 +54,7 @@ coveralls {
     jacocoReportPath = "$buildDir/reports/coverage/debug/report.xml"
 }
 dependencies {
+    api project(":ndk")
     api "com.android.support:support-annotations:$supportLibVersion"
 
     androidTestImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
